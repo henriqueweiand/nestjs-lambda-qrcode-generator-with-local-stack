@@ -1,0 +1,72 @@
+org: henriqueweiand
+app: nestjs-lambda-qrcode-generator
+service: lambda-s3
+
+useDotenv: true
+
+plugins:
+  - serverless-s3-local
+  - serverless-offline
+  - serverless-localstack
+
+custom:
+  localstack:
+    stages:
+      - local
+    host: http://localhost
+    edgePort: 4566
+    lambda:
+      mountCode: true
+  s3:
+    host: localhost
+    directory: ./buckets
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:ListBucket
+        - s3:GetObject
+        - s3:PutObject
+        - s3:PutObjectAcl
+      Resource:
+        - arn:aws:s3:::${env:BUCKET_NAME}
+        - arn:aws:s3:::${env:BUCKET_NAME}/*
+  environment:
+    AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID}
+    AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY}
+    AWS_ENDPOINT: ${env:AWS_ENDPOINT}
+    BUCKET_NAME: ${env:BUCKET_NAME}
+    NODE_ENV: ${env:NODE_ENV}
+
+resources:
+  Resources:
+    QrCodeBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${env:BUCKET_NAME}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ['*']
+              AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+              AllowedOrigins: ['*']
+              MaxAge: 3000
+
+functions:
+  main:
+    handler: dist/serverless.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
