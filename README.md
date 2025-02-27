@@ -1,5 +1,7 @@
 # nestjs-lambda-qrcode-generator-with-local-stack
 
+Article: https://medium.com/nestjs-ninja/running-nestjs-in-a-lambda-function-with-localstack-and-serverless-framework-2751cf09a493
+
 ## Description
 
 A NestJS application designed to generate QR codes using AWS Lambda and store the QR Code inside AWS S3 with LocalStack or serverless-s3-local.
